@@ -3,20 +3,12 @@
 #include<iostream>
 
 inline bool IsNumber(char ch) {return (ch>47)&&(ch<58);}
-int ConvertToNumber(char);
-void ConvertLine (std::string&);
-
-
-// Implement functions
 
 int ConvertToNumber(char ch)
 {
     if (!IsNumber(ch)) {return -1;}
     return ch-48;
 }
-
-// list of string digits
-std::vector<std::string> stringDigits {"one","two","three","four","five","six","seven","eight","nine"};
 
 // so unfassbar haesslich ...
 void ConvertLine (std::string& line)

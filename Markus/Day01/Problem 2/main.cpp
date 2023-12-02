@@ -49,11 +49,7 @@ int main(int argc, char const *argv[])
 
     // print result
     std::cout << "The result of the task is: " << counter << '\n';
-
-    /* std::string test {"onetwooththreeifourththtfivegnjseventninieninenowsixsi"};
-    ConvertLine(test);
-    std::cout << test << '\n';
- */
+    
     inputFile.close();
 
     return 0;
