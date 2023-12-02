@@ -36,7 +36,7 @@
 
 ### VS Code ###
 .vscode/
-.json
+*.json
 
 ### Mac OS ###
 .DS_Store
