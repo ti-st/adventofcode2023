@@ -2,6 +2,8 @@ package input;
 
 import java.io.File;  // Import the File class
 import java.io.FileNotFoundException;  // Import this class to handle errors
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner; // Import the Scanner class to read text files
 import java.util.List;
@@ -22,4 +24,18 @@ public class InputFile {
         }
         return fileContent;
     }
+
+    public static void writeFile(String[] lines, String path) {
+    try {
+      FileWriter myWriter = new FileWriter(path);
+      for (String string : lines) {
+        myWriter.write(string);
+      }
+      myWriter.close();
+      System.out.println("Successfully wrote to the file.");
+    } catch (IOException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
+  }
 }
