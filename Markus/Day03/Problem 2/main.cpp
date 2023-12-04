@@ -2,71 +2,107 @@
 #include<fstream>
 #include<string>
 #include<vector>
+#include<numeric>
 
 inline bool IsNumber(char ch) {return (ch>47)&&(ch<58);}
 inline int ConvertToNumber(char ch) {return ch-48;}
-int ConvertSeqToNumber(const std::string& input, int i)
+
+int IntPower(int x, unsigned int p)
 {
-    return (i-2 >= 0 && IsNumber(input[i-2]) && IsNumber(input[i-1]) ? ConvertToNumber(input[i-2]) : 0)*100 +
-           (i-1 >= 0 && IsNumber(input[i-1]) ? ConvertToNumber(input[i-1]) : 0)*10  +
-           ConvertToNumber(input[i]);
+    if (p == 0) {return 1;}
+    if (p == 1) {return x;}
+    
+    int tmp = IntPower(x, p/2);
+    if (p%2 == 0) {return tmp * tmp;}
+    else {return x * tmp * tmp;}
 }
 
-int CheckSurroundings(const std::string& input, int i, int lineLength, int numberRows)
+int ReadNumberFromRight(const std::string& line, int i, int counter = 0)
 {
-    int columnIndex     {i % lineLength};
-    bool notFirstColumn {columnIndex > 0};
-    bool notLastColumn  {columnIndex < lineLength-1};
-    bool notFirstLine   {i-lineLength >= 0};
-    bool notLastLine    {i+lineLength < lineLength*numberRows};
+    int tmp {0};
+    if (i>0 && IsNumber(line[i-1]))
+    {
+        tmp = ReadNumberFromRight(line, i-1, counter+1);
+    }
+    return tmp + ConvertToNumber(line[i]) * IntPower(10, counter);
+}
 
-    bool left {notFirstColumn && IsNumber(input[i-1])};
-    bool topLeft {notFirstLine && notFirstColumn && IsNumber(input[i-1-lineLength])};
-    bool top {notFirstLine && IsNumber(input[i-lineLength])};
-    bool topRight {notFirstLine && notLastColumn && IsNumber(input[i+1-lineLength])};
-    bool right {notLastColumn && IsNumber(input[i+1])};
-    bool bottomRight {notLastColumn && notLastLine && IsNumber(input[i+1+lineLength])};
-    bool bottom {notLastLine && IsNumber(input[i+lineLength])};
-    bool bottomLeft {notLastLine  && notFirstColumn && IsNumber(input[i-1+lineLength])};
+int ReadNumber(const std::string& line, int i)
+{
+    if (i < line.size() && IsNumber(line[i+1]))
+    {
+        return ReadNumber(line, i+1);
+    }
+    else
+    {
+        return ReadNumberFromRight(line, i);
+    }
+}
 
-    int leftN {ConvertSeqToNumber(input, i-1)};
-    int topLeftN {ConvertSeqToNumber(input, i-1-lineLength)};
-    int topN {ConvertSeqToNumber(input, i-lineLength)};
-    int topRightN {ConvertSeqToNumber(input, i+1-lineLength)};
-    int rightN {ConvertSeqToNumber(input, i+1)};
-    int bottomRightN {ConvertSeqToNumber(input, i+1+lineLength)};
-    int bottomN {ConvertSeqToNumber(input, i+lineLength)};
-    int bottomLeftN {ConvertSeqToNumber(input, i-1+lineLength)};
+struct VicinityFlags
+{
+    bool left {false};
+    bool topLeft {false};
+    bool top {false};
+    bool topRight {false};
+    bool right {false};
+    bool bottomRight {false};
+    bool bottom {false};
+    bool bottomLeft {false};
+};
+
+VicinityFlags SetVicinityFlags(const std::string& input, int i, int lineLength, int numberRows)
+{
+    int columnIndex {i % lineLength};
+    VicinityFlags flags;
+
+    if (columnIndex > 0 && IsNumber(input[i-1])) {flags.left = true;}
+    if (i-lineLength >= 0 && columnIndex > 0 && IsNumber(input[i-1-lineLength])) {flags.topLeft = true;}
+    if (i-lineLength >= 0 && IsNumber(input[i-lineLength])) {flags.top = true;}
+    if (i-lineLength >= 0 && columnIndex < lineLength-1 && IsNumber(input[i+1-lineLength])) {flags.topRight = true;}
+    if (columnIndex < lineLength-1 && IsNumber(input[i+1])) {flags.right = true;}
+    if (columnIndex < lineLength-1 && i+lineLength < lineLength*numberRows && IsNumber(input[i+1+lineLength])) {flags.bottomRight = true;}
+    if (i+lineLength < lineLength*numberRows && IsNumber(input[i+lineLength])) {flags.bottom = true;}
+    if (i+lineLength < lineLength*numberRows  && columnIndex > 0 && IsNumber(input[i-1+lineLength])) {flags.bottomLeft = true;}
+
+    return flags;
+}
+
+int NumberOfAdjacentNumbers(const std::string& input, int i, int lineLength, int numberRows)
+{
+    VicinityFlags flags {SetVicinityFlags(input, i, lineLength, numberRows)};
 
     int counter {0};
+    if (flags.left) {counter++;}
+    if (flags.right) {counter++;}
+    if (flags.topLeft) {counter++;}
+    if (flags.bottomLeft) {counter++;}
+    if (flags.top && !flags.topLeft) {counter++;}
+    if (flags.bottom && !flags.bottomLeft) {counter++;}
+    if (flags.topRight && !flags.top) {counter++;}
+    if (flags.bottomRight && !flags.bottom) {counter++;}
 
-    if (left) {counter++;}
-    if (right) {counter++;}
-    if (topLeft) {counter++;}
-    if (bottomLeft) {counter++;}
-    if (top && !topLeft) {counter++;}
-    if (bottom && !bottomLeft) {counter++;}
-    if (topRight && !top) {counter++;}
-    if (bottomRight && !bottom) {counter++;}
-
-    int gearRatio {0};
-    if (counter == 2)
-    {
-        gearRatio = (left ? leftN : 1) *
-                    (topLeft ? topLeftN : 1) *
-                    (top ? topN : 1) *
-                    (topRight ? topRightN : 1) *
-                    (right ? rightN : 1) *
-                    (bottomRight ? bottomRightN : 1) *
-                    (bottom ? bottomN : 1) *
-                    (bottomLeft ? bottomLeftN : 1);
-    }
-
-    return gearRatio;
-
+    return counter;
 }
 
-/* void SetFlags(const std::string& input, std::vector<int>& flags, int lineLength, int numberRows)
+std::vector<int> GearRatio(const std::string& input, int i, int lineLength, int numberRows)
+{
+    VicinityFlags flags {SetVicinityFlags(input, i, lineLength, numberRows)};
+    std::vector<int> partNumbers;
+
+    if (flags.left) {partNumbers.push_back(ReadNumber(input, i-1));}
+    if (flags.right) {partNumbers.push_back(ReadNumber(input, i+1));}
+    if (flags.topLeft) {partNumbers.push_back(ReadNumber(input, i-1-lineLength));}
+    if (flags.bottomLeft) {partNumbers.push_back(ReadNumber(input, i-1+lineLength));}
+    if (flags.top && !flags.topLeft) {partNumbers.push_back(ReadNumber(input, i-lineLength));}
+    if (flags.bottom && !flags.bottomLeft) {partNumbers.push_back(ReadNumber(input, i+lineLength));}
+    if (flags.topRight && !flags.top) {partNumbers.push_back(ReadNumber(input, i+1-lineLength));}
+    if (flags.bottomRight && !flags.bottom) {partNumbers.push_back(ReadNumber(input, i+1+lineLength));}
+
+    return partNumbers;
+}
+
+void SetFlags(const std::string& input, std::vector<int>& flags, int lineLength, int numberRows)
 {
     if (input.size() != flags.size())
     {
@@ -76,16 +112,12 @@ int CheckSurroundings(const std::string& input, int i, int lineLength, int numbe
 
     for (std::string::size_type i = 0; i < input.size(); i++)
     {
-        if (IsNumber(input[i]) && CheckSurroundings(input, i, lineLength, numberRows))
+        if (input[i]=='*' && NumberOfAdjacentNumbers(input, i, lineLength, numberRows)==2)
         {
             flags[i] = 1;
-            if (i-1 >= 0 && IsNumber(input[i-1])) {flags[i-1] = 1;}
-            if (i-2 >= 0 && IsNumber(input[i-1]) && IsNumber(input[i-2])) {flags[i-2] = 1;}
-            if (i+1 < lineLength*numberRows && IsNumber(input[i+1])) {flags[i+1] = 1;}
-            if (i+2 < lineLength*numberRows && IsNumber(input[i+1]) && IsNumber(input[i+2])) {flags[i+2] = 1;}
         }
     }
-} */
+}
 
 int main(int argc, char const *argv[])
 {
@@ -112,20 +144,33 @@ int main(int argc, char const *argv[])
     }
 
     // Initialize and set flag vector
-    /* std::vector<int> flagVector(fileString.size());
-    SetFlags(fileString, flagVector, lineLength, numberRows); */
+    std::vector<int> flagVector(fileString.size());
+    SetFlags(fileString, flagVector, lineLength, numberRows);
 
     // Do actual task
-    int result {0};
+    std::vector<int> resultVector;
     for (std::string::size_type i = 0; i < fileString.size(); i++)
     {
-        if (fileString[i] == '*')
+        if (flagVector[i]==1)
         {
-            result += CheckSurroundings(fileString, i, lineLength, numberRows);
+            std::vector<int> tmp = GearRatio(fileString, i, lineLength, numberRows);
+            if (tmp.size() == 2)
+            {
+                resultVector.push_back(tmp[0]*tmp[1]);
+            }
+            else
+            {
+                std::cout << "Error: tmp.size() != 2\n";
+                exit(1);
+            }
         }
     }
+    
+    // Calculate the sum over resultVector
+    int sum = std::accumulate(resultVector.begin(), resultVector.end(), 0);
 
-    std::cout << "The result is: " << result << '\n';
+    // Print the sum
+    std::cout << "The sum is: " << sum << '\n';
 
     return 0;
 }
