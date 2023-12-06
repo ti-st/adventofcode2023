@@ -2,6 +2,8 @@
 #include<fstream>
 #include<string>
 #include<vector>
+#include<algorithm>
+#include <numeric>
 
 inline bool IsNumber(char ch) {return (ch>47)&&(ch<58);}
 inline int ConvertToNumber(char ch) {return ch-48;}
@@ -64,18 +66,34 @@ std::vector<int> ReadUserNumbers(const std::string& line)
     return result;
 }
 
-int PointsOfTicket (const std::vector<int>& winningNumbers, const std::vector<int>& userNumbers)
+int NumberOfMatches(const std::vector<int>& winningNumbers, const std::vector<int>& userNumbers)
 {
-    int numberOfMatches {0};
-    for (auto usrN : userNumbers)
+    int number {0};
+    for (auto winN : winningNumbers)
     {
-        for (auto winN : winningNumbers)
+        number += std::count(userNumbers.begin(), userNumbers.end(), winN);
+    }
+ 
+    return number;
+}
+
+std::vector<int> ScratchcardNumbers(const std::vector<std::vector<int>>& winningNumbers, const std::vector<std::vector<int>>& userNumbers, int totalCards)
+{
+    // Vector that contains number of each scratchcard (initially all with 1 copy each)
+    std::vector<int> scratchcardNumbers(totalCards,1);
+    int numberMatchesTicket {};
+    for (int i = 0; i < totalCards; i++)
+    {
+        numberMatchesTicket = NumberOfMatches(winningNumbers[i], userNumbers[i]);
+        for (int j = 1; j <= std::min(numberMatchesTicket, totalCards-i-1); j++)
         {
-            if (usrN == winN) {numberOfMatches++;}
+            scratchcardNumbers[i+j] += scratchcardNumbers[i];
         }
     }
-    return (numberOfMatches >= 1 ? IntPower(2, numberOfMatches-1) : 0);
+
+    return scratchcardNumbers;
 }
+
 
 int main(int argc, char const *argv[])
 {
@@ -100,14 +118,12 @@ int main(int argc, char const *argv[])
         counter++;
     }
 
-    // Calculate sum of all points
-    int result {0};
-    for (int i = 0; i < winningNumbers.size(); i++)
-    {
-        result += PointsOfTicket(winningNumbers[i], userNumbers[i]);
-    }
+    // Total number of scratchcards
+    int totalCards {197};
+    // Calculate number of each scratchcard
+    std::vector<int> resultVec {ScratchcardNumbers(winningNumbers, userNumbers, totalCards)};
 
-    std::cout << "The result is: " << result << '\n';
+    std::cout << "The total number of cards is: " << std::accumulate(resultVec.begin(), resultVec.end(), 0) << std::endl;
 
     return 0;
 }
