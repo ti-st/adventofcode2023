@@ -5,16 +5,18 @@ struct Interval{
     start: i64,
     end: i64,
     length: i64,
-    maps_to: i32
+    maps_to: Box<Interval>, // the interval which is the image of this
+    origin_of: Box<Interval>    // the upper level link to the next interval
 }
 
 impl Interval{
-    fn new(start: i64, end: i64, length: i64, maps_to: i32) -> Interval{
+    fn new(start: i64, end: i64, length: i64) -> Interval{
         Interval{
             start,
             end,
             length,
-            maps_to
+            maps_to: Box::new(Interval::new(0,0,0)),
+            origin_of: Box::new(Interval::new(0,0,0))
         }
     }
 
@@ -31,8 +33,38 @@ impl Interval{
         return false;
     }
 
+    fn update_origin(&mut self, new_start: i64, new_end: i64, new_length: i64){
+
+    }
+
+    fn update_interval(&mut self, image_interval: &mut Interval, shift_start: i64){
+        self.start = self.start+shift_start;
+        self.end = self.start+image_interval.length-1;
+        self.length = image_interval.length;
+        self.maps_to = Box::new(image_interval.clone());
+        if !self.origin_of.equals(Interval::new(0,0,0)){
+            self.origin_of.update_interval(self, shift_start);
+        }
+
+    fn equals(&self, other: &mut Interval) -> bool{
+        if self.start == other.start && self.end == other.end && self.length == other.length{
+            return true;
+        }
+        return false;
+    }
+
+    // fn split_interval(&mut self, image_interval: &mut Interval) -> Interval{
+    //     let mut new_interval = Interval::new(self.start, self.end-image_interval.length, image_interval.length);
+    //     new_interval.maps_to = Box::new(image_interval.clone());
+    //     new_interval.origin_of = Box::new(Interval::new(0,0,0));
+    //     image_interval.maps_to = Box::new(new_interval.clone());
+    //     return new_interval;
+    // }
 }
 
+fn make_links(&mut groups: Vec<Vec<Interval>>){
+    // do stuff
+}
 
 fn num_in_tup(num: i64, tup: (i64, i64, i64)) -> bool{
     if num >= tup.1 && num <= tup.1+tup.2-1{
@@ -112,11 +144,9 @@ fn main() {
 
     // TODO: 
     /*
-    - start at lowest group
-    - loop trough intervals, for each interval without map=-1, take their image (map_to) and check if the image overlaps with any other interval in the next group where the upper-level interval is the ground-level (map_to != -1)
-    - shrink down the interval in the lower group to the BIGGEST possible interval
-    - go to the next upper group level and repeat. If a middle-layer group interval is shrinked down, propagate the shrinking down to the lower group level
-     */
+    - link intervals
+    - start at top group and just update all links down to the origin
+    - loop over bottom group and find loc*/
 
     // for group_index in 0..groups.len()-1{
     //     let mut lower_intervals = groups[group_index];
