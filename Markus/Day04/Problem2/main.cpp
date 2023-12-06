@@ -3,7 +3,7 @@
 #include<string>
 #include<vector>
 #include<algorithm>
-#include <numeric>
+#include<numeric>
 
 inline bool IsNumber(char ch) {return (ch>47)&&(ch<58);}
 inline int ConvertToNumber(char ch) {return ch-48;}
