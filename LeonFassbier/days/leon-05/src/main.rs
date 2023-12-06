@@ -46,10 +46,10 @@ impl Map {
         }
     }
 
-    fn map_range(&self, input: Range) -> Vec<Range> {
+    fn map_range(&self, input: &Range) -> Vec<Range> {
         let mut result: Vec<Range> = Vec::new();
         let mut still_to_map: Vec<Range> = Vec::new();
-        still_to_map.push(input);
+        still_to_map.push(input.clone());
 
         for range in self.ranges.iter() {
             let mut next_to_map: Vec<Range> = Vec::new();
@@ -90,15 +90,15 @@ impl Map {
         }
 
         for to_map in still_to_map.into_iter() {
-            result.push(to_map);
+            result.push(to_map.clone());
         }
         result
     }
 }
 
 fn main() {
-    // let filepath = "/home/fass/codeProjects/adventofcode2023/LeonFassbier/days/leon-05/testInput.txt";
-    let filepath = "/home/fass/codeProjects/adventofcode2023/LeonFassbier/days/leon-05/input.txt";
+    // let filepath = "testInput.txt";
+    let filepath = "input.txt";
 
     println!("Using input {}", filepath.split('/').last().unwrap());
 
@@ -176,17 +176,29 @@ fn main() {
 
     println!("Found {} maps", maps.len());
 
+    let mut cur_ordering_map = maps
+        .iter()
+        .find(|m| m.src == "seed")
+        .expect("No seed-map found");
+
+    let mut maps_ordered : Vec<&Map> = Vec::new();
+    maps_ordered.push(cur_ordering_map);
+    // println!("Mapped to {} ranges", mapped.len());
+
+    while let Some(next_map) = maps.iter().find(|m| m.src == cur_ordering_map.dst) {
+        maps_ordered.push(next_map);
+        cur_ordering_map = next_map;
+    }
+
+
     let mut final_mapped: Vec<i64> = Vec::new();
     for seed in seeds {
-        let mut cur_map = maps
-            .iter()
-            .find(|m| m.src == "seed")
-            .expect("No seed-map found");
+        let mut cur_map_iter = maps.iter();
+        let cur_map = cur_map_iter.next().expect("No seed-map found");
         let mut mapped = cur_map.map(seed);
 
-        while let Some(next_map) = maps.iter().find(|m| m.src == cur_map.dst) {
-            mapped = next_map.map(mapped);
-            cur_map = &next_map;
+        for map in cur_map_iter{
+            mapped = map.map(mapped);
         }
         // println!("Mapped to {mapped}");
         final_mapped.push(mapped);
@@ -199,29 +211,25 @@ fn main() {
     println!("Minimum mapped output is {min_mapped}");
 
     let mut final_mapped: Vec<Vec<Range>> = Vec::new();
-    for seed_range in seed_ranges {
-        let mut cur_map = maps
-            .iter()
-            .find(|m| m.src == "seed")
-            .expect("No seed-map found");
-
-        let mut mapped = cur_map.map_range(seed_range);
+    for seed_range in seed_ranges.iter() {
+        let mut mapped: Vec<Range> = vec![seed_range.clone()];
         // println!("Mapped to {} ranges", mapped.len());
 
-        while let Some(next_map) = maps.iter().find(|m| m.src == cur_map.dst) {
+        for map in maps_ordered.iter() {
             let mut next_mapped: Vec<Range> = Vec::new();
             for r in mapped {
-                let partial_mapped = next_map.map_range(r);
+                let partial_mapped = map.map_range(&r);
                 for partial in partial_mapped.into_iter() {
                     next_mapped.push(partial);
                 }
             }
-
-            cur_map = &next_map;
             mapped = next_mapped;
         }
         // println!("Mapped to {} ranges", mapped.len());
-        println!("Mapping for seed range complete into {} total ranges", mapped.len());
+        println!(
+            "Mapping for seed range complete into {} total ranges",
+            mapped.len()
+        );
         final_mapped.push(mapped);
     }
 
@@ -232,7 +240,34 @@ fn main() {
             .min()
             .expect("Could not get minimum of starts")
     }));
-    let total_min = range_mins.into_iter().min().expect("Could not get global minimum");
+    let total_min = range_mins
+        .into_iter()
+        .min()
+        .expect("Could not get global minimum");
 
     println!("Lowest location number is {total_min}");
+    println!("Now trying to brute force...");
+
+    let mut final_mapped_brute: Vec<i64> = Vec::new();
+    for seed_range in seed_ranges.iter() {
+        println!("Starting seed range with {} seeds", seed_range.len);
+        for seed in seed_range.start..seed_range.start + seed_range.len {
+            if seed % 100_000 == 0 {
+                let i_seed = seed - seed_range.start;
+                let percent_done = i_seed * 100 / seed_range.len;
+                print!("\r Processing {i_seed} of {} ({percent_done} %)", seed_range.len)
+            }
+
+            let mut cur_map_iter = maps.iter();
+            let cur_map = cur_map_iter.next().expect("No seed-map found");
+            let mut mapped = cur_map.map(seed);
+    
+            for map in cur_map_iter{
+                mapped = map.map(mapped);
+            }
+            // println!("Mapped to {mapped}");
+            final_mapped_brute.push(mapped);
+        }
+        println!();
+    }
 }
