@@ -65,16 +65,17 @@ int main(int argc, char const *argv[])
     std::cout << "File opened successfully!\n";
 
     // Read in seed IDs
-    std::vector<unsigned long long> seedIDs;
+    std::vector<unsigned long long> seedIDsOriginal;
     std::string line;
     std::getline(inputFile, line);
     for (int i = 0; i < line.size(); i++)
     {
         if (IsNumber(line[i]) && (i+1 == line.size() || !IsNumber(line[i+1])))
         {
-            seedIDs.push_back(ReadNumber(line, i));
+            seedIDsOriginal.push_back(ReadNumber(line, i));
         }
     }
+    std::vector<unsigned long long> seedIDs {seedIDsOriginal};
 
     // Create a vector to store mapping information
     std::vector<MapTriple> mapVec;
@@ -137,8 +138,7 @@ int main(int argc, char const *argv[])
         }
     }
 
-
-    // One final mapping because not pastBlockFlag is set at end of file
+    // One final mapping because no pastBlockFlag is set at end of file
     for (int i = 0; i < seedIDs.size(); i++)
     {
         seedIDs[i] = MapSourceToDestination(seedIDs[i], mapVec);
@@ -149,6 +149,8 @@ int main(int argc, char const *argv[])
     if (smallestElement != seedIDs.end())
     {
         std::cout << "The lowest location number is: " << *smallestElement << std::endl;
+        std::cout << "It corresponds to seed ID: " << seedIDsOriginal[std::distance( seedIDs.begin(), smallestElement )] << std::endl;
+        std::cout << "It is found at index: " << std::distance( seedIDs.begin(), smallestElement ) << std::endl;
     }
 
     return 0;
