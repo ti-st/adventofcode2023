@@ -69,7 +69,133 @@ unsigned long long MapDestinationToSource(unsigned long long destinationID, cons
     return destinationID;
 }
 
-unsigned long long FindLowestLocationNumber(const std::vector<unsigned long long>& seedIDRange, const std::vector<std::string>& inputLines);
+// unsigned long long FindLowestLocationNumber(const std::vector<unsigned long long>& seedIDRange, const std::vector<std::string>& inputLines, unsigned long long lowestLocationStart = 825516882);
+unsigned long long FindLowestLocationNumber(const std::vector<unsigned long long>& seedIDRange, const std::vector<std::string>& inputLines, unsigned long long lowestLocationStart = 0)
+{
+    // Create a vector to store mapping information
+    std::vector<MapTriple> mapVec;
+
+    // Create a temporary vector to store values read from each line
+    std::vector<unsigned long long> tmpVec;
+
+    // Create a temporary MapTriple object to store the mapping information for each line
+    MapTriple tmpMap;
+
+    // Flag to indicate if we have passed the block of mapping information
+    bool pastBlockFlag {false};
+
+    // Variable to store the lowest location number
+    unsigned long long lowestLocation {lowestLocationStart};
+    unsigned long long lowestLocationMapped {lowestLocationStart};
+
+    std::vector<std::vector<MapTriple>> mapVecVec;
+
+    // Read each line from the input file but in reverse order
+    for (int i = inputLines.size()-1; i >= 0; i--)
+    {
+        // Check if the line starts with a number1
+        if (IsNumber(inputLines[i][0]))
+        {
+            pastBlockFlag = false;
+            tmpVec.clear();
+
+            // Extract numbers from the line and store them in tmpVec
+            for (int j = 0; j < inputLines[i].size(); j++)
+            {
+                if (IsNumber(inputLines[i][j]) && (j+1 == inputLines[i].size() || !IsNumber(inputLines[i][j+1])))
+                {
+                        tmpVec.push_back(ReadNumber(inputLines[i], j));
+                }
+            }
+
+            // Check if the size of tmpVec is not equal to 3
+            if (tmpVec.size() != 3)
+            {
+                std::cout << "Error: tmpVec.size() != 3\n";
+                exit(1);
+            }
+
+            // Assign values from tmpVec to tmpMap
+            tmpMap.destinationRangeStart = tmpVec[0];
+            tmpMap.sourceRangeStart = tmpVec[1];
+            tmpMap.rangeLength = tmpVec[2];
+
+            // Add tmpMap to the mapVec
+            mapVec.push_back(tmpMap);
+        }
+        else if (!pastBlockFlag)
+        {
+            mapVecVec.push_back(mapVec);
+            mapVec.clear();
+            pastBlockFlag = true;
+        }
+    }
+
+    if (mapVecVec.size() != 7)
+    {
+        std::cout << "Error: mapVecVec.size() != 7\n";
+        exit(1);
+    }
+
+    std::vector<MapTriple> humidity2locationMap {mapVecVec[0]};
+    std::vector<MapTriple> temperature2humidityMap {mapVecVec[1]};
+    std::vector<MapTriple> light2temperatureMap {mapVecVec[2]};
+    std::vector<MapTriple> water2lightMap {mapVecVec[3]};
+    std::vector<MapTriple> fertilizer2waterMap {mapVecVec[4]};
+    std::vector<MapTriple> soil2fertilizerMap {mapVecVec[5]};
+    std::vector<MapTriple> seed2soilMap {mapVecVec[6]};
+
+    // Loop diagnostics
+    unsigned long long loopCounter {0};
+    double percent {0.0};
+
+    while (true)
+    {
+        loopCounter++;
+
+        // Apply mappings
+        lowestLocationMapped = MapDestinationToSource(lowestLocationMapped, humidity2locationMap);
+        lowestLocationMapped = MapDestinationToSource(lowestLocationMapped, temperature2humidityMap);
+        lowestLocationMapped = MapDestinationToSource(lowestLocationMapped, light2temperatureMap);
+        lowestLocationMapped = MapDestinationToSource(lowestLocationMapped, water2lightMap);
+        lowestLocationMapped = MapDestinationToSource(lowestLocationMapped, fertilizer2waterMap);
+        lowestLocationMapped = MapDestinationToSource(lowestLocationMapped, soil2fertilizerMap);
+        lowestLocationMapped = MapDestinationToSource(lowestLocationMapped, seed2soilMap);
+        
+        // Check if we hit a seed
+        for (int j = 0; j < seedIDRange.size(); j+=2)
+        {
+            if (lowestLocationMapped >= seedIDRange[j] && lowestLocationMapped <= seedIDRange[j] + seedIDRange[j+1])
+            {
+                return lowestLocation;
+            }
+            /* for (int k = seedIDRange[j]; k <= seedIDRange[j] + seedIDRange[j+1]; k++)
+            {
+                if (lowestLocationMapped == k)
+                {
+                    return lowestLocationMapped;
+                }
+            } */
+        }
+
+        //std::cout << "lowestLocationMapped: " << lowestLocationMapped << std::endl;
+
+        // Print loopCounter every 10000000 iterations
+        percent = (double)loopCounter / (double)825516882ULL * 100.0;
+        if (loopCounter % 10000000 == 0) {
+            std::cout << "Percent until definite hit: " << percent << std::endl;
+        }
+
+        // If we didn't hit a seed, increment lowestLocation
+        lowestLocation++;
+        lowestLocationMapped = lowestLocation;
+
+        //seedHitFlag = true;
+
+    }
+
+    return lowestLocation;
+}   
 
 int main(int argc, char const *argv[])
 {
@@ -112,17 +238,17 @@ int main(int argc, char const *argv[])
     } */
 
     // Go back to beginning of file
-    inputFile.clear();
-    inputFile.seekg(0);
+    //inputFile.clear();
+    //inputFile.seekg(0);
 
-    // Read file into vector of strings but backwards
+    // Read file into vector of strings
     std::vector<std::string> inputLines;
     while (std::getline(inputFile, line))
     {
         inputLines.push_back(line);
     }
 
-    // Check if inverse map works
+    /* // Check if inverse map works
     // Create a vector to store mapping information
     std::vector<MapTriple> mapVec;
     // Create a temporary vector to store values read from each line
@@ -134,8 +260,8 @@ int main(int argc, char const *argv[])
     // Variable to store the lowest location number
     unsigned long long lowestLocation {825516882};
     unsigned long long tmpLowestLocation {lowestLocation};
-    // Read each line from the input file
-    for (int i = 0; i < inputLines.size(); i++)
+    // Read each line from the input file but in reverse order
+    for (int i = inputLines.size()-1; i >= 0; i--)
     {
         // Check if the line starts with a number1
         if (IsNumber(inputLines[i][0]))
@@ -173,11 +299,11 @@ int main(int argc, char const *argv[])
         }
     }
     std::cout << "tmpLowestLocation: " << tmpLowestLocation << std::endl;
-    std::cout << "Should be: 1921754120" << std::endl;
+    std::cout << "Should be: 1921754120" << std::endl; */
 
-    // unsigned long long lowestLocation {FindLowestLocationNumber(seedIDRange, inputLines)};
+    unsigned long long lowestLocation2 {FindLowestLocationNumber(seedIDRange, inputLines)};
 
-    // std::cout << "The lowest location number is: " << lowestLocation << std::endl;
+    std::cout << "The lowest location number is: " << lowestLocation2 << std::endl;
     
 
     // Read each line from the input file
@@ -241,121 +367,4 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-unsigned long long FindLowestLocationNumber(const std::vector<unsigned long long>& seedIDRange, const std::vector<std::string>& inputLines)
-{
-    // Create a vector to store mapping information
-    std::vector<MapTriple> mapVec;
 
-    // Create a temporary vector to store values read from each line
-    std::vector<unsigned long long> tmpVec;
-
-    // Create a temporary MapTriple object to store the mapping information for each line
-    MapTriple tmpMap;
-
-    // Flag to indicate if we have passed the block of mapping information
-    bool pastBlockFlag {false};
-
-    // Variable to store the lowest location number
-    unsigned long long lowestLocation {825516882};
-    unsigned long long tmpLowestLocation {lowestLocation};
-
-    // Flag that indicates whether we hit a seed
-    bool seedHitFlag {false};
-
-    while (!seedHitFlag)
-    {
-        // Read each line from the input file
-        for (int i = 0; i < inputLines.size(); i++)
-        {
-            // Check if the line starts with a number1
-            if (IsNumber(inputLines[i][0]))
-            {
-                pastBlockFlag = false;
-                tmpVec.clear();
-
-                // Extract numbers from the line and store them in tmpVec
-                for (int j = 0; j < inputLines[i].size(); j++)
-                {
-                    if (IsNumber(inputLines[i][j]) && (j+1 == inputLines[i].size() || !IsNumber(inputLines[i][j+1])))
-                    {
-                        tmpVec.push_back(ReadNumber(inputLines[i], j));
-                    }
-                }
-
-                // Check if the size of tmpVec is not equal to 3
-                if (tmpVec.size() != 3)
-                {
-                    std::cout << "Error: tmpVec.size() != 3\n";
-                    exit(1);
-                }
-
-                // Assign values from tmpVec to tmpMap
-                tmpMap.destinationRangeStart = tmpVec[0];
-                tmpMap.sourceRangeStart = tmpVec[1];
-                tmpMap.rangeLength = tmpVec[2];
-
-                // Add tmpMap to the mapVec
-                mapVec.push_back(tmpMap);
-            }
-            else
-            {
-                pastBlockFlag = true;
-            }
-
-            // If we have passed the block of mapping information, apply the inverse mapping to lowestLocation
-            if (pastBlockFlag)
-            {
-                tmpLowestLocation = MapDestinationToSource(tmpLowestLocation, mapVec);
-                mapVec.clear();
-            }
-
-
-            /* if (pastBlockFlag)
-            {
-                for (int j = 0; j < seedIDRange.size(); j+=2)
-                {
-                    for (int k = seedIDRange[j]; k <= seedIDRange[j] + seedIDRange[j+1]; k++)
-                    {
-                        k = MapDestinationToSource(k, mapVec);
-                        if (k < lowestLocation)
-                        {
-                            lowestLocation = k;
-                        }
-                        if (k >= seedIDRange[j] && k <= seedIDRange[j] + seedIDRange[j+1])
-                        {
-                            seedHitFlag = true;
-                        }
-                    }
-                }
-                mapVec.clear();
-            } */
-        }
-        
-        // Check if we hit a seed
-        for (int j = 0; j < seedIDRange.size(); j+=2)
-        {
-            if (tmpLowestLocation >= seedIDRange[j] && tmpLowestLocation <= seedIDRange[j] + seedIDRange[j+1])
-            {
-                return tmpLowestLocation;
-            }
-            /* for (int k = seedIDRange[j]; k <= seedIDRange[j] + seedIDRange[j+1]; k++)
-            {
-                if (tmpLowestLocation == k)
-                {
-                    return tmpLowestLocation;
-                }
-            } */
-        }
-
-        std::cout << "tmpLowestLocation: " << tmpLowestLocation << std::endl;
-
-        // If we didn't hit a seed, increment lowestLocation
-        lowestLocation++;
-        tmpLowestLocation = lowestLocation;
-
-        seedHitFlag = true;
-
-    }
-
-    return lowestLocation;
-}   
