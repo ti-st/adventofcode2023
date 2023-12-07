@@ -4,7 +4,7 @@ use std::fs;
 struct CardSet {
     winning: Vec<i32>,
     own: Vec<i32>,
-    num: i32,
+    copies: i32,
 }
 
 fn main() {
@@ -38,7 +38,7 @@ fn main() {
         let card = CardSet {
             winning: Vec::from_iter(winning_nums),
             own: Vec::from_iter(own_nums),
-            num: 1,
+            copies: 1,
         };
         cards.push(card);
     }
@@ -61,7 +61,7 @@ fn main() {
 
     for i in 0..cards.len() {
         let card = &cards[i];
-        let card_num = card.num;
+        let card_num = card.copies;
         let mut num_matching = 0;
         for own_num in card.own.iter() {
             if card.winning.contains(own_num) {
@@ -69,11 +69,11 @@ fn main() {
             }
         }
         for i_copied in (i + 1)..(i + 1 + num_matching) {
-            cards[i_copied].num += card_num;
+            cards[i_copied].copies += card_num;
         }
     }
 
-    let total_cards: i32 = cards.into_iter().map(|c| c.num).sum();
+    let total_cards: i32 = cards.into_iter().map(|c| c.copies).sum();
 
     println!("Total number of cards for Part 2 is {total_cards}");
 }

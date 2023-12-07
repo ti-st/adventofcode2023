@@ -1,3 +1,5 @@
+package utils;
+
 public class Utils {
     public static boolean isNumeric(String value){
         try {

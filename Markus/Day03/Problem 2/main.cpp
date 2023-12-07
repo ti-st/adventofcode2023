@@ -72,11 +72,7 @@ int NumberOfAdjacentNumbers(const std::string& input, int i, int lineLength, int
 {
     VicinityFlags flags {SetVicinityFlags(input, i, lineLength, numberRows)};
 
-    int counter {0};
-    if (flags.left) {counter++;}
-    if (flags.right) {counter++;}
-    if (flags.topLeft) {counter++;}
-    if (flags.bottomLeft) {counter++;}
+    int counter {flags.left + flags.right + flags.topLeft + flags.bottomLeft};
     if (flags.top && !flags.topLeft) {counter++;}
     if (flags.bottom && !flags.bottomLeft) {counter++;}
     if (flags.topRight && !flags.top) {counter++;}
@@ -136,7 +132,6 @@ int main(int argc, char const *argv[])
 
     // Write input file into a SINGLE string
     std::string dummyLine {};
-    //std::string endOfLine {"."};
     std::string fileString;
     while (std::getline(inputFile, dummyLine))
     {
@@ -170,7 +165,7 @@ int main(int argc, char const *argv[])
     int sum = std::accumulate(resultVector.begin(), resultVector.end(), 0);
 
     // Print the sum
-    std::cout << "The sum is: " << sum << '\n';
+    std::cout << "The result is: " << sum << '\n';
 
     return 0;
 }
