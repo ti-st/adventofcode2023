@@ -1,0 +1,72 @@
+\documentclass{article}
+\usepackage[hidelinks]{hyperref}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\newcommand{\tc}{t_\text{c}}
+
+\begin{document}
+
+\section*{Advent of Code - Day 6}
+While reading the task of Advent of Code Day 6\footnote{\url{https://adventofcode.com/2023/day/6}}, 
+the reader may swiftly realize that this problem is obviously nothing else then an inequality of a quadratic equation.
+Let $t_0$ be the time a race $r$ takes and $d_0$ the distance one has to overcome. 
+By holding down the button for a time $\tc$ the boat accelerates without changing its position with unit acceleration $a = 1\text{m}/\text{s}$.
+Thus, the velocity after a charging time of $\tc$ is just $v = a \cdot \tc = \tc$\footnote{If not stated otherwise, all lengths are in millimeter and times in milliseconds.}.
+Using this we can find the relation 
+\begin{equation}
+    d_0 < t_0\cdot \tc -\tc^2
+    \label{constraint}
+\end{equation}
+Solving this inequality for $\tc$ yields the time-interval that one can target in order to win the race. 
+The solution is formally given by 
+\begin{equation}
+    (\tc-t_+)(\tc-t_-) < 0
+\end{equation}
+with 
+\begin{equation}
+        t_\pm = \frac{t_0}{2} \pm \sqrt{\frac{t_0^2}{4} - d_0}.
+        \label{eq:time_interval}
+\end{equation}
+Since $t_+>t_-$ there is only one case for which this inequality holds, namely $\tc \in I:=(t_-, t_+)$.
+However since the problem is formulated for times $\tc \in \mathbb{N}$, we have to round the interval $I$ to the nearest integer.
+Define $I_N:=(\lceil t_-\rceil, \lfloor t_+ \rfloor)$. All $\tc \in I_N$ are valid solutions to the problem.
+The number of possible strategies $s$ for a race $r$ is given by the cardinality of $I_N$, i.e. 
+\begin{equation}
+    s=|I_N| = \lfloor t_+ \rfloor - \lceil t_- \rceil + 1.
+    \label{eq:number_of_strategies}
+\end{equation}
+\subsection*{Problem 1}
+The input for the first problem was given as displayed in Table \ref{tab:time_distance}.
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{ccc}
+        \textbf{Race} $r$ & \textbf{Time} $t_0$& \textbf{Distance} $d_0$\\
+        1 & 54 & 302 \\
+        2 & 94 & 1476 \\
+        3 & 65 & 1029 \\
+        4 & 92 & 1404 \\
+    \end{tabular}
+    \caption{Time and Distance}
+    \label{tab:time_distance}
+\end{table}
+Using the equations \ref{eq:time_interval} together with \ref{eq:number_of_strategies} yields the following results:
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{cccc}
+        \textbf{Race} $r$ & \textbf{$t_+$} & \textbf{$t_-$} & \textbf{$s$}\\
+        1 & 47.66 & 6.34 & 41\\
+        2 & 74.07 & 19.93 & 55\\
+        3 & 37.72 & 27.30 & 10\\
+        4 & 72.68 & 19.32 & 53\\
+    \end{tabular}
+    \caption{Time and Distance. Interval bounds are rounded to second decimal place.}
+    \label{tab:day1_results}
+\end{table}
+Multiplying all the results $s$ together yields the number $1195150$, which is the correct results.
+\newpage
+\subsection*{Problem 2}
+This input was just one race with time $t_0 = 54946592$ and distance $d_0 = 302147610291404$. This results in 
+\begin{equation*}
+    t_+ = 48748501.82302818 \quad,\quad t_- = 6198090.176971823 \quad \text{and} \quad s = 42550411.
+\end{equation*}
+\end{document}
