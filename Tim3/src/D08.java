@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import input.InputFile;
+import utils.LcmCalculator;
 
 class Node{
     String name;
@@ -85,7 +86,7 @@ public class D08 {
         return steps;
     }
 
-    static int part2(){
+    static long part2(){
         HashMap<Node, Integer> nodeSteps = new HashMap<>();
         List<Node> startNodes = new ArrayList<>();
         for (Node node: nodes.values()){
@@ -108,14 +109,15 @@ public class D08 {
             }
             nodeSteps.put(node, steps);
         }
-        int[] allSteps = new int[nodeSteps.size()];
+        long[] allSteps = new long[nodeSteps.size()];
         int i = 0;
         for (int steps: nodeSteps.values()){
             allSteps[i] = steps;
             //System.out.println(steps);
             i++;
         }
-        return 0;
+        long result = LcmCalculator.calculateLcmOfArray(allSteps);
+        return result;
 
     }
 
