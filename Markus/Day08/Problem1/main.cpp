@@ -5,20 +5,6 @@
 #include <unordered_map>
 #include <utility>
 
-enum InstructionType {RIGHT, LEFT};
-
-// Function that reads in vector of navigation instructions from string
-std::vector<InstructionType> ReadInstructions(const std::string& line)
-{
-    std::vector<InstructionType> instructions;
-    for (int i = 0; i < line.size(); i++)
-    {
-        if (line[i] == 'R') {instructions.push_back(RIGHT);}
-        else if (line[i] == 'L') {instructions.push_back(LEFT);}
-    }
-    return instructions;
-}
-
 int main(int argc, char const *argv[])
 {
     // Read input file
@@ -31,15 +17,15 @@ int main(int argc, char const *argv[])
     }
     std::cout << "File opened successfully!\n";
 
-    // Read in instruction vector from first line of input file
-    std::string line;
-    std::getline(inputFile, line);
-    std::vector<InstructionType> instructions {ReadInstructions(line)};
+    // Read in instructions from first line of input file
+    std::string instructions;
+    std::getline(inputFile, instructions);
 
     // Map that contians key = node and value = pair of nodes
     std::unordered_map<std::string, std::pair<std::string, std::string>> nodeTripleMap;
     // Vector that contains string triples from input line
     std::vector<std::string> nodeVec;
+    std::string line;
     while (std::getline(inputFile, line))
     {
         if (line.size() == 0) {continue;}
@@ -64,11 +50,11 @@ int main(int argc, char const *argv[])
     // Repeatedly loop over instructions
     while (true)
     {
-        if (instructions[i] == RIGHT)
+        if (instructions[i] == 'R')
         {
             currentNode = nodeTripleMap[currentNode].second;
         }
-        else if (instructions[i] == LEFT)
+        else if (instructions[i] == 'L')
         {
             currentNode = nodeTripleMap[currentNode].first;
         }
