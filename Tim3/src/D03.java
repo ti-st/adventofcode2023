@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
-import input.InputFile;
+import utils.InputFile;
 
 class Part{
     int nr;

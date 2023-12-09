@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 
-import input.InputFile;
+import utils.InputFile;
 import utils.Utils;
 
 class Range{
