@@ -3,7 +3,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import input.InputFile;
+import utils.InputFile;
 
 class Game{
     public int id;

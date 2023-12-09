@@ -1,5 +1,6 @@
 import java.util.List;
-import input.InputFile;
+
+import utils.InputFile;
 
 public class D01 {
     static String wordToNumeric(String word){

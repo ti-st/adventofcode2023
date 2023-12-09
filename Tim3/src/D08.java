@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import input.InputFile;
-import utils.LcmCalculator;
+import utils.InputFile;
+import utils.Utils;
 
 class Node{
     String name;
@@ -116,7 +116,7 @@ public class D08 {
             //System.out.println(steps);
             i++;
         }
-        long result = LcmCalculator.calculateLcmOfArray(allSteps);
+        long result = Utils.calculateLcmOfArray(allSteps);
         return result;
 
     }

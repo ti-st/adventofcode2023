@@ -1,8 +1,9 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
 
-import input.InputFile;
+import utils.InputFile;
+
+import java.util.HashMap;
 
 class Hand implements Comparable<Hand>{
     char[] cards;
