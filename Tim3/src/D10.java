@@ -148,6 +148,21 @@ public class D10 {
             current = tmp;
         }
         loop.add(current);
+        /*
+        char[][] map = new char[pipes.length][pipes[0].length];
+        for (int y=0; y<pipes.length; y++){
+            for (int x=0; x<pipes[y].length; x++){
+                if (loop.contains(pipes[y][x])) map[y][x] = pipes[y][x].type;
+                else map[y][x] = '.';
+            }
+        }
+        String[] mapStr = new String[map.length];
+        for (int y=0; y<map.length; y++){
+            String str = new String(map[y]);
+            mapStr[y] = str+"\n";
+        }
+        InputFile.writeFile(mapStr, "./Tim3/src/input/10Map.txt");
+        */
         return 0;
 
     }
